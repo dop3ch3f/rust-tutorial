@@ -1,36 +1,15 @@
-struct HockeyPlayer {
-    name: String,
-    position: String,
-}
+// Ownership
 
-// methods
-impl HockeyPlayer {
-    // to just read use &self and to write &mut self
-    fn shoot_puck(&self, seconds_remaining: u16) -> String {
-        if seconds_remaining < 300 {
-            let result = match self.position.as_str() {
-                "Wing" => "Goal",
-                _ => "Miss",
-            };
-            return String::from(result);
-        } else {
-            return String::from("Goal");
-        }
-    }
-}
+// each piece of data has one owning variable
+// owner is responsible for cleaning up that data
+// cleanup happens when the owner goes out of scope
+// the owner decides on the mutablilty of the value
 
-// associated function
-impl HockeyPlayer {
-    fn new(name: String, position: String) -> HockeyPlayer {
-        HockeyPlayer {
-            name: name,
-            position: position,
-        }
-    }
+fn pluralize(value: String) -> String {
+    value + "s"
 }
 
 fn main() {
-    let player = HockeyPlayer::new(String::from("Bryan Rust"), String::from("Wing"));
-    let value = player.shoot_puck(10000);
-    println!("{} just had a {}", player.name, value);
+    let s = String::from("book");
+    println!("i have one {}, you have two {}", s, pluralize(s.clone()));
 }
