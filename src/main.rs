@@ -5,11 +5,11 @@
 // cleanup happens when the owner goes out of scope
 // the owner decides on the mutablilty of the value
 
-fn pluralize(value: String) -> String {
-    value + "s"
+fn pluralize(value: &str) -> String {
+    value.to_owned() + "s"
 }
 
 fn main() {
     let s = String::from("book");
-    println!("i have one {}, you have two {}", s, pluralize(s.clone()));
+    println!("i have one {}, you have two {}", s, pluralize(&s));
 }
