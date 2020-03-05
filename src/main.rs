@@ -1,30 +1,21 @@
 // entry point for all programs
 fn main() {
-    // add mut to make it mutable
-    let mut x = 5;
-    x += 1;
-    // variables by default are constants
-    let y = 6;
-    let z = x + y;
-    // heres how you print out
-    println!("z is  {}", z);
+    next_birthday("ifeanyi ibekie", 33);
+    println!("The square of 3 is {}", square(3))
+}
 
-    // Booleans
-    let a = true;
-    if a {
-        println!("true");
-    }
-    // array
-    let a = [100, 200, 300];
-    // usize
-    let b = a[0];
-    // f64 for devs
-    let x = 54.3;
-    let p = 'a';
-    // tuples
-    let tup = (1, 'c', true);
-    // accessing tuples
-    println!("{}", tup.0);
-    // destructuring tuples
-    let (x, y, z) = tup;
+/// fn name(param1: type1, ...) -> return_type {
+///   ...body...
+/// }
+
+fn next_birthday(name: &str, current_age: u8) {
+    let next_age = current_age + 1;
+    println!(
+        "Hi {}, on your next birthday, you will be {}",
+        name, next_age
+    );
+}
+
+fn square(num: isize) -> isize {
+    num * num
 }
