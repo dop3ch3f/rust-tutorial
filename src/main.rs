@@ -1,26 +1,67 @@
-// Properties of enums
-// can only be one value at a time
-// can list (enumerate) all possible values
-// do not change on run time
+// enums are for choice between a set of values
+// structs are the same attributes for a data type
 
-// defining enum variants that hold data
-enum Clock {
-    Sundial(u8),
-    Digital(u8, u8),
-    Analog(u8, u8, u8),
+// struct definition
+struct HockeyPlayer {
+    name: String,
+    number: u8,
+    goals_ytd: u8,
 }
 
-fn tell_time(clock: Clock) {
-    match clock {
-        Clock::Sundial(hours) => println!("{} o'clock", hours),
-        Clock::Analog(hours, minutes, seconds) => println!("{}:{}:{}", hours, minutes, seconds),
-        Clock::Digital(hours, minutes) => println!("{}:{}", hours, minutes),
-    }
+// tuple structs
+struct Triangle(u32, u32, u32);
+
+fn is_equilateral(triangle: Triangle) -> bool {
+    triangle.0 == triangle.1 && triangle.1 == triangle.2
+}
+
+// you can use tuples to define new data types out of primitives
+// here we can wrap a u8 for our own use as meters
+// it is called new type pattern
+
+struct Meters(u8);
+
+// Unit structs have no initial value
+// struct MyStruct;
+// let s = MyStruct;
+
+fn add_distances(d1: Meters, d2: Meters) -> Meters {
+    Meters(d1.0 + d2.0)
 }
 
 fn main() {
-    // using an enum
-    tell_time(Clock::Analog(9, 25, 30));
-    tell_time(Clock::Digital(8, 25));
-    tell_time(Clock::Sundial(10));
+    let mut player = HockeyPlayer {
+        name: String::from("Bryan Rust"),
+        number: 17,
+        goals_ytd: 7,
+    };
+
+    player.goals_ytd += 1;
+
+    println!(
+        "{} of number {} has scored {} goals this season",
+        player.name, player.number, player.goals_ytd
+    );
+
+    let triangle = Triangle(3, 4, 5);
+    println!("{}", is_equilateral(triangle));
+
+    let distance1 = Meters(3);
+    let distance2 = Meters(7);
+
+    let distance3 = add_distances(distance1, distance2);
+    println!("{}", distance3.0);
 }
+
+// blending enums with structs
+//  enum Clock {
+//      Sundial { hours: u8 },
+//      Digital {hours: u8, minutes: u8 },
+//  }
+
+//  fn main() {
+//      let clock = Clock::Digital {
+//          hours: 9,
+//          minutes: 10,
+//      };
+//  }
