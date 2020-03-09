@@ -1,107 +1,76 @@
-use std::collections::HashMap;
+// Management of sockets
 
-// what does it mean when we say variables are borrowed at the same time
+// a socket is a network endpoint e.g TCP
+// to use a tcp:
+/*
+  we bind to a port
+  close the port when done
+  memory and sockets should be treated alike
 
-// at the same time = in the same scope
+  Memory and Socket Problems
+  Memory                Sockets
+  Use after free       Use after close
+  Double free          Closing twice
+  Memory Leaks         Socket Leaks
+  Mitigated with garbage collection  NOT mitigated with garbage collection
+  Fixed with Ownership   Fixed with ownership
+*/
+
+// use std::net::TcpListener;
+// use std::thread;
+// use std::time::Duration;
+
+// fn open_socket_for_five_seconds() {
+//     let _listener = TcpListener::bind("127.0.0.1:5000").unwrap();
+//     thread::sleep(Duration::from_secs(5));
+// }
+
+// fn main() {
+//     // create socket
+//     open_socket_for_five_seconds();
+//     // socket will close as soon as it is back in main
+//     println!("Back in main");
+//     thread::sleep(Duration::from_secs(5));
+// }
+
+// Other resources managed with ownership
+
+// Mutex<t> (Mutual Exclusion)
+// - only let one thread at a time change the inner value
+// - to modify the value, acquire the mutex's lock
+// - Release the lock after modifying to let other threads acquire the lock
+// - owner going out of scope automatically releases the lock in rust
+
+// Rc<T> (Reference Counted)
+// - Allows for mutliple owners
+// - keeps track of how many owners exist
+// - memory is cleaned up when the last owner goes out of scope
+// - count management happens automatically when each owner goes out of scope
+
+
+// Files
+// - Close when done using
+// - Closed automatically when owner goes out of scope
+
+// Customizing types with the Drop trait
+
+// The Drop Trait
+// One method:drop
+// drop takes &mut self
+// logic neccessary to cleanup the resources any type uses
+
+struct Noisy {
+    id: i32
+}
+
+impl Drop for Noisy {
+    fn drop(&mut self) {
+        println!("Noisy number {} going out of scope!", self.id);
+    }
+}
 
 fn main() {
-    let mut list = vec![1, 2, 3];
-    // New scope pattern
-    // adding new scopes  to end all the immutable borrows before the mutable borrow
-
-    {
-        let list_first = list.first();
-        let list_last = list.last();
-        println!(
-            "the first element is {:?} and the last is  {:?}",
-            list_first, list_last
-        );
-    }
-
-    *list.first_mut().expect("List was empty") += 1;
-
-    // Temporary variable pattern
-    let mut player1 = Player::new();
-    let old_score = player1.score();
-    player1.set_score(old_score + 1);
-
-    // ENTRY API
-    let text = "hello world hello";
-
-    let mut freqs = HashMap::new();
-
-    for word in text.split_whitespace() {
-        // match freqs.get_mut(word) {
-        //     Some(value) => *value += 1,
-        //     None => {
-        //         freqs.insert(word, 1);
-        //     }
-        // }
-        *freqs.entry(word).or_insert(0) += 1;
-    }
-
-    println!("Word frequencies: {:#?}", freqs);
-
-    // Splitting up structs
+    let  _n1 = Noisy { id:1 };
+    let  _n2 = Noisy { id: 2};
+    println!("End of main");
 }
-
-// split of stucts with unifying functionality together and attach them to parent structs if there are issues of mutabliliy and immutability
-pub struct Stats {
-    hp: u8,
-    sp: u8,
-}
-
-impl Stats {
-    pub fn heal(&mut self, amount: u8) {
-        self.hp += amount;
-        self.sp -= amount;
-    }
-}
-
-pub struct Monster {
-    stats: Stats,
-    friends: Vec<Friend>,
-}
-
-pub struct Friend {
-    loyalty: u8,
-}
-
-impl Monster {
-    pub fn final_breath(&mut self) {
-        if let Some(friend) = self.friends.first() {
-            self.stats.heal(friend.loyalty);
-            println!("Healing for  {}", friend.loyalty);
-        }
-    }
-}
-
-#[derive(Debug)]
-struct Player {
-    score: i32,
-}
-
-impl Player {
-    pub fn set_score(&mut self, new_score: i32) {
-        self.score = new_score;
-    }
-
-    pub fn score(&self) -> i32 {
-        self.score
-    }
-
-    pub fn new() -> Self {
-        Player { score: 0 }
-    }
-}
-
-// Improvements to Borrowing
-// Borrows that aren't used through the end of the scope
-// Borrows only used for part of an expression
-// Borrows that aren't used in all arms of an if or match expression
-
-// things that wont change
-// entry api will still be used and is efficient
-// won't change the need the to split structs as methods will still borrow the entire struct
-// code that actually violates the borrowing rules will still be invalid
-// existing code might not be updated
