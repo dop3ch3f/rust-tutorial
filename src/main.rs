@@ -1,67 +1,24 @@
-// Panic Concept
-// panic! macro
-// #[derive(Debug)]
-// enum Platform {
-//     Windows,
-//     Linux,
-//     Macos,
-// }
-
-// impl Platform {
-//     fn parse(platform_arg: &str) -> Platform {
-//         if platform_arg == "windows" {
-//             Platform::Windows
-//         } else if platform_arg == "linux" {
-//             Platform::Linux
-//         } else if platform_arg == "macos" {
-//             Platform::Macos
-//         } else {
-//             panic!(
-//                 "Unknown platform: {}. Valid values: windows, linux, macos",
-//                 platform_arg
-//             );
-//         }
-//     }
-// }
-
-// fn main() {
-//     let platform_arg = "win";
-//     let platform = Platform::parse(platform_arg);
-//     println!("Producing output for {:?}", platform);
-// }
-
-// Situations in which to panic
-
-// when continuing will be incorrect
-// no way for calling code to recover
-// when problem must be fixed in code not by user input
-// Panic first, change later
-
-// Other macros that call panic!
-
-// unreachable! - impossible to get to this spot
-
-enum DoorState {
-    Opened,
-    Closed,
-}
-
-enum DoorAction {
-    Open,
-    Close,
-}
-
-fn take_action(current_state: DoorState, action: DoorAction) {
-    match (current_state, action) {
-        (DoorState::Opened, DoorAction::Close) => unimplemented!(),
-        (DoorState::Closed, DoorAction::Open) => {
-            // code to open the door goes here
-        }
-        // if you get here, a programming mistake has been made
-        _ => unreachable!(),
-    }
-}
+// Result Type
+// an enum that returns Ok or Err
+// Option Type
+// an enum that returns Some(if value) or None(if no value)
 
 fn main() {
-    take_action(DoorState::Opened, DoorAction::Open);
+    let nonempty_list = vec!['a', 'b', 'c'];
+    println!("nonempty_list last is: {:?}", nonempty_list.last());
+
+    let empty_list: Vec<char> = vec![];
+    println!("empty_list last is: {:?}", empty_list.last());
 }
+// What to do with Result or Option
+// Success Ok() or  Some()
+// to get the value of Ok()
+  
+// let first_inner = match first {
+//     Ok(inner) => inner,
+//     Err(_) => panic!(),
+//     Err(error) => panic!(),
+//     _ => unimplemented!(),
+// };
+
+// Converting Recoverable to Unrecoverable
