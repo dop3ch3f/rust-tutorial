@@ -1,76 +1,67 @@
-// Management of sockets
+// Panic Concept
+// panic! macro
+// #[derive(Debug)]
+// enum Platform {
+//     Windows,
+//     Linux,
+//     Macos,
+// }
 
-// a socket is a network endpoint e.g TCP
-// to use a tcp:
-/*
-  we bind to a port
-  close the port when done
-  memory and sockets should be treated alike
-
-  Memory and Socket Problems
-  Memory                Sockets
-  Use after free       Use after close
-  Double free          Closing twice
-  Memory Leaks         Socket Leaks
-  Mitigated with garbage collection  NOT mitigated with garbage collection
-  Fixed with Ownership   Fixed with ownership
-*/
-
-// use std::net::TcpListener;
-// use std::thread;
-// use std::time::Duration;
-
-// fn open_socket_for_five_seconds() {
-//     let _listener = TcpListener::bind("127.0.0.1:5000").unwrap();
-//     thread::sleep(Duration::from_secs(5));
+// impl Platform {
+//     fn parse(platform_arg: &str) -> Platform {
+//         if platform_arg == "windows" {
+//             Platform::Windows
+//         } else if platform_arg == "linux" {
+//             Platform::Linux
+//         } else if platform_arg == "macos" {
+//             Platform::Macos
+//         } else {
+//             panic!(
+//                 "Unknown platform: {}. Valid values: windows, linux, macos",
+//                 platform_arg
+//             );
+//         }
+//     }
 // }
 
 // fn main() {
-//     // create socket
-//     open_socket_for_five_seconds();
-//     // socket will close as soon as it is back in main
-//     println!("Back in main");
-//     thread::sleep(Duration::from_secs(5));
+//     let platform_arg = "win";
+//     let platform = Platform::parse(platform_arg);
+//     println!("Producing output for {:?}", platform);
 // }
 
-// Other resources managed with ownership
+// Situations in which to panic
 
-// Mutex<t> (Mutual Exclusion)
-// - only let one thread at a time change the inner value
-// - to modify the value, acquire the mutex's lock
-// - Release the lock after modifying to let other threads acquire the lock
-// - owner going out of scope automatically releases the lock in rust
+// when continuing will be incorrect
+// no way for calling code to recover
+// when problem must be fixed in code not by user input
+// Panic first, change later
 
-// Rc<T> (Reference Counted)
-// - Allows for mutliple owners
-// - keeps track of how many owners exist
-// - memory is cleaned up when the last owner goes out of scope
-// - count management happens automatically when each owner goes out of scope
+// Other macros that call panic!
 
+// unreachable! - impossible to get to this spot
 
-// Files
-// - Close when done using
-// - Closed automatically when owner goes out of scope
-
-// Customizing types with the Drop trait
-
-// The Drop Trait
-// One method:drop
-// drop takes &mut self
-// logic neccessary to cleanup the resources any type uses
-
-struct Noisy {
-    id: i32
+enum DoorState {
+    Opened,
+    Closed,
 }
 
-impl Drop for Noisy {
-    fn drop(&mut self) {
-        println!("Noisy number {} going out of scope!", self.id);
+enum DoorAction {
+    Open,
+    Close,
+}
+
+fn take_action(current_state: DoorState, action: DoorAction) {
+    match (current_state, action) {
+        (DoorState::Opened, DoorAction::Close) => unimplemented!(),
+        (DoorState::Closed, DoorAction::Open) => {
+            // code to open the door goes here
+        }
+        // if you get here, a programming mistake has been made
+        _ => unreachable!(),
     }
 }
 
 fn main() {
-    let  _n1 = Noisy { id:1 };
-    let  _n2 = Noisy { id: 2};
-    println!("End of main");
+    take_action(DoorState::Opened, DoorAction::Open);
 }
