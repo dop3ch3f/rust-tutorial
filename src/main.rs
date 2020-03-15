@@ -1,24 +1,34 @@
-// Result Type
-// an enum that returns Ok or Err
-// Option Type
-// an enum that returns Some(if value) or None(if no value)
+// How to return Result
 
-fn main() {
-    let nonempty_list = vec!['a', 'b', 'c'];
-    println!("nonempty_list last is: {:?}", nonempty_list.last());
+use std::time;
 
-    let empty_list: Vec<char> = vec![];
-    println!("empty_list last is: {:?}", empty_list.last());
+fn save_status(text: &str) -> Result<i64, &'static str> {
+    if text.len() > 200 {
+        return Err("status text is too long");
+    }
+// How to use ?
+    let record = save_to_database(text)?;
+
+    Ok(record.id)
+
 }
-// What to do with Result or Option
-// Success Ok() or  Some()
-// to get the value of Ok()
-  
-// let first_inner = match first {
-//     Ok(inner) => inner,
-//     Err(_) => panic!(),
-//     Err(error) => panic!(),
-//     _ => unimplemented!(),
-// };
 
-// Converting Recoverable to Unrecoverable
+fn save_to_database(text: &str) -> Result<StatusRecord, &'static str> {
+    // fake implementation that always fails
+    Err("db unavailable")
+}
+
+struct StatusRecord {
+    id: i64,
+    text: String,
+    created_at: std::time::Instant,
+}
+
+// Where ? is valid
+// - it must be called in methods that return a result or an option so you can annotate methods that didnt initially to let the code pass
+// Recent features involving ?
+
+// - you can use ? on Option Values
+// - same but instead return Some or None
+// - can use ? to return in main because now main can return a value just anotate the return type
+// - you can use question mark in tests the same way
