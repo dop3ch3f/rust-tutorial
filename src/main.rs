@@ -1,29 +1,86 @@
-// Seperating bugs from recoverable errors
+// Custom Error types
 
-// Panic
-// - bad state that shouldn't happen
-// - no recovery
-// - bug that a programmer must fix
+// Solution 1: Returning a Box<Error> trait object
+// use std::env;
+// use std::error::Error;
+// fn num_threads() -> Result<usize, Box<dyn Error>> {
+//     let s = env::var("NUM_THREADS")?;
+//     let n: usize = s.parse()?;
+//     Ok(n + 1)
+// }
 
-// Result
-// - Bad state that might happen in normal use
-// - recovery is a possiblity
-// - end user might be able to fix
+// fn run_application() -> Result<(), Box<dyn Error>> {
+//     let num = num_threads()?;
+//     println!("the number of threads is {}", num);
+//     Ok(())
+// }
 
-// Advantages from rusts error handling
-// - loud failures
-// - fail fasts (prevents hacking and easy debugs)
-// - enforce assumptions (the expect method helps to easily panic with a value on methods that return a type result and option)
-//   let config = File::open("config.toml").expect("Config file not created on startup")
+// fn main() {
+//     if let Err(e) = run_application() {
+//         panic!("an error occured: {}", e);
+//     }
+// }
 
-// - possibility of errors is clear. once you see a result it can fail
-// - compiler forces handling
+// Downside
+// - Can't inspect the error type in code
+// - Can't decide to handle different errors differently
 
-// // in contrast with go
-// // return (success value, error value) not one or another
-// // check wether the error value is nil after each function call
-// // no compiler enforcement
+// Solution 2: Defining a custom error type
 
-// Disadvantages
-// -it can be annoying to always return errors
-// - use expect a lot
+// Document Storage Service as example
+
+use std::error::Error;
+use std::fmt;
+use std::fs::File;
+use std::fs::OpenOptions;
+use std::io;
+
+const MAX_DOCS_CREATES_PER_MINUTE: u8 = 100;
+
+fn num_documents_created_in_last_minute() -> u8 {
+    2
+}
+
+#[derive(Debug)]
+pub enum DocumentServiceError {
+    RateLimitExceeded,
+    Io(io::Error),
+}
+
+impl Error for DocumentServiceError {}
+
+impl fmt::Display for DocumentServiceError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use DocumentServiceError::*;
+        match *self {
+            RateLimitExceeded => write!(f, "Max number of docs per minute"),
+            Io(ref io) => write!(f, "I/O error: {}", io),
+        }
+    }
+}
+
+impl From<io::Error> for DocumentServiceError {
+    fn from(other: io::Error) -> Self {
+        DocumentServiceError::Io(other)
+    }
+}
+
+// Result type alias
+use std::result;
+
+pub type Result<T> = result::Result<T, DocumentServiceError>;
+
+pub fn create_document(filename: &str) -> Result<File> {
+    if num_documents_created_in_last_minute() > MAX_DOCS_CREATES_PER_MINUTE {
+        return Err(DocumentServiceError::RateLimitExceeded);
+    }
+
+    let file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(filename)?;
+
+    Ok(file)
+}
+
+fn main() {}
