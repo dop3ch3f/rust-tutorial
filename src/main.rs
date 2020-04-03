@@ -1,74 +1,58 @@
-// Visualizing lifetimes
+// Generic Lifetime
+// Lifetime of a reference
+// Concrete lifetimes of referenced values are unknown
+// Can exist in functions, methods, structs, enums, traits
+// Compiler needs enough info to prove validity for all possible concrete lifetimes
 
-// Examples of invalid references
+// Generic type parameters
+// An abstraction that allows us to write reusable code with different types
 
-// Returning a reference to a value created within an inner scope
+pub struct Approval<T> {
+    item: T,
+    approved: bool,
+}
 
-// fn main() {
-//     let first_two = {
-//         let list = vec![100, 34, 72, 55];
-//         &list[0..2]
-//     };
+impl<T> Approval<T> {
+    pub fn new(item: T) -> Approval<T> {
+        Approval {
+            item,
+            approved: false,
+        }
+    }
 
-//     println!("First two are {:?}", first_two);
-// }
- 
+    pub fn approve(&mut self) {
+        self.approved = true;
+    }
 
-// Returning a reference to a value created within a function
+    pub fn replace<U>(self, other_item: U) -> Approval<U> {
+        Approval {
+            item: other_item,
+            approved: self.approved
+        }
+    }
 
-// fn main() {
-//     let first_two = return_first_two();
-//     println!("First two are {:?}", first_two );
-// }
+    pub fn approved_item(&self) -> Option<&T> {
+        if self.approved {
+            Some(&self.item)
+        } else {
+            None
+        }
+    }
+}
 
-// fn return_first_two() -> &[i32] {
-//     let list = vec![100, 34, 72, 55];
-//     &list[0..2]
-// }
+// How to use code with generic type paramneters
 
-// Returning a moved value
+use std::net::{IpAddr, Ipv4Addr};
 
-// fn main() {
-//     let list_a = vec![100, 34, 72, 55];
-//     let list_b = list_a;
-//     let first_two = &list_a[0..2];
-//     println!("First two are {:?}", first_two );
-// }
+fn main() {
+    let amount = 1000;
+    let mut approval_amount = Approval::new(amount);
+    assert!(approval_amount.approved_item().is_none());
+    approval_amount.approve();
+    assert_eq!(approval_amount.approved_item(), Some(&1000));
 
-// Self referential struct
-
-// struct ListAndRef {
-//     list: Vec<i32>,
-//     first_two: &[i32],
-// }
-
-// fn return_list_and_first_two() -> ListAndRef {
-//     let list_to_use = vec![100, 34, 72, 55];
-
-//     ListAndRef {
-//         list: list_to_use,
-//         first_two: &list_to_use[0..2],
-//     }
-// }
-
-// to enforce self referential structs checkout crates
-// rental, owning-ref
-
-// Storing references in a HashMap
-
-// use std::io;
-// use std::collections::HashMap;
-
-// fn main() {
-//     println!("Please enter some text to get word counts");
-//     let mut counts = HashMap::new();
-//     let mut input = String::new();
-
-//     io::stdin().read_line(&mut input).expect("Problem reading input");
-
-//     for word in input.split_whitespace() {
-//         let count = counts.entry(word).or_insert(0);
-//         *count += 1;
-//     }
-//     println!("counts = {:?}", counts );
-// }
+    let mut approval_ip = Approval::new(IpAddr::V4(Ipv4Addr::new(127,0,0,1)));
+    assert!(approval_ip.approved_item().is_none());
+    approval_ip.approve();
+    assert_eq!(approval_ip.approved_item(), Some(&IpAddr::V4(Ipv4Addr::new(127,0,0,1))));
+}
