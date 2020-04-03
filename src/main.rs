@@ -1,58 +1,70 @@
-// Generic Lifetime
-// Lifetime of a reference
-// Concrete lifetimes of referenced values are unknown
-// Can exist in functions, methods, structs, enums, traits
-// Compiler needs enough info to prove validity for all possible concrete lifetimes
+// Why generic lifetime paramenters are needed
+// - Specify how lifetimes of references are related
+// - So the compiler can ensure te validity of references
 
-// Generic type parameters
-// An abstraction that allows us to write reusable code with different types
+// Syntax of generic lifetime parameters
 
-pub struct Approval<T> {
-    item: T,
-    approved: bool,
-}
+// extern crate rand;
 
-impl<T> Approval<T> {
-    pub fn new(item: T) -> Approval<T> {
-        Approval {
-            item,
-            approved: false,
-        }
-    }
+// fn simulate_game<'a>(home: &'a str, away: &'a str) -> &'a str {
+//     if rand::random() {
+//         home
+//     } else {
+//         away
+//     }
+// }
 
-    pub fn approve(&mut self) {
-        self.approved = true;
-    }
+// fn main() {
+//     print!("{}",simulate_game("home","away"));
+// }
 
-    pub fn replace<U>(self, other_item: U) -> Approval<U> {
-        Approval {
-            item: other_item,
-            approved: self.approved
-        }
-    }
+// Why Lifetime parameters are necessary
 
-    pub fn approved_item(&self) -> Option<&T> {
-        if self.approved {
-            Some(&self.item)
-        } else {
-            None
-        }
-    }
-}
+// - Express your intent in the signature
+// - Keeps compiler analysis local
+// - Compiler can't tell what lifetimes should be in complex cases
 
-// How to use code with generic type paramneters
+// Compare and contrast generic type and lifetime parameters
 
-use std::net::{IpAddr, Ipv4Addr};
+    // Generic Types vs Generic Lifetimes
+    // - Both are declared in angle brackets(ex: <'a, T>)
+    // - Both are used in structs, enums, functions, methodsm traits etc.
+    // - Generic over types                  - Generic over scopes
+    // - Names in UpperCamelCase             - Names in snake_case
+    // - Generates code for each usage       - Used during analysis only
 
-fn main() {
-    let amount = 1000;
-    let mut approval_amount = Approval::new(amount);
-    assert!(approval_amount.approved_item().is_none());
-    approval_amount.approve();
-    assert_eq!(approval_amount.approved_item(), Some(&1000));
+// Adding lifetime parameters to an example
 
-    let mut approval_ip = Approval::new(IpAddr::V4(Ipv4Addr::new(127,0,0,1)));
-    assert!(approval_ip.approved_item().is_none());
-    approval_ip.approve();
-    assert_eq!(approval_ip.approved_item(), Some(&IpAddr::V4(Ipv4Addr::new(127,0,0,1))));
-}
+// pub struct Stemmer {
+//     pub suffix: String,
+// }
+
+// impl Stemmer {
+//     pub fn stem<'a>(&self, word: &'a str) -> &'a str {
+//         if  word.ends_with(&self.suffix) {
+//             let index = word.rfind(&self.suffix).expect("Should be found because ends_with returned true");
+//             &word[0..index]
+//         } else {
+//             word
+//         }
+//     }
+// }
+
+// fn main() {
+//    let word = String::from("credited");
+//    let word_stem = {
+//        let stemmer = Stemmer {
+//            suffix: String::from("ed"),
+//        };
+//        stemmer.stem(&word)
+//    };
+//    println!("the stem of {} is  {}", word, word_stem);
+// }
+
+
+
+// Strategy for fixing lifetime parameter errors
+
+// - Read entire error messages and help text
+// - analyse generic lifetimes and specify how you intend them to be related
+// - analyse concrete lifetimes where using definitions
